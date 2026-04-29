@@ -1,11 +1,13 @@
 using AITaskTracker.API.DTOs;
 using AITaskTracker.API.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace AITaskTracker.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[AllowAnonymous]
 public class AuthController : ControllerBase
 {
   private readonly IAuthService _authService;

@@ -40,8 +40,8 @@ public class TaskRepository : ITaskRepository
     await _context.SaveChangesAsync();
   }
 
-  public Task SaveChangesAsync()
+  public async Task SaveChangesAsync()
   {
-    throw new NotImplementedException();
+    await _context.SaveChangesAsync();
   }
 }

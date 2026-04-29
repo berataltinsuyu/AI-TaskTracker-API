@@ -7,10 +7,12 @@ namespace AITaskTracker.API.Services;
 public class AuthService : IAuthService
 {
     private readonly IUserRepository _userRepository;
+    private readonly ITokenService _tokenService;
 
-    public AuthService(IUserRepository userRepository)
+    public AuthService(IUserRepository userRepository, ITokenService tokenService)
     {
         _userRepository = userRepository;
+        _tokenService = tokenService;
     }
 
     public async Task<AuthResponseDto?> RegisterAsync(RegisterDto dto)
@@ -36,12 +38,15 @@ public class AuthService : IAuthService
         await _userRepository.AddAsync(user);
         await _userRepository.SaveChangesAsync();
 
+        var token = _tokenService.CreateToken(user);
+
         return new AuthResponseDto
         {
             UserId = user.Id,
             FullName = user.FullName,
             Email = user.Email,
             Role = user.Role,
+            Token = token,
             Message = "User registered successfully."
         };
     }
@@ -62,12 +67,15 @@ public class AuthService : IAuthService
             return null;
         }
 
+        var token = _tokenService.CreateToken(user);
+
         return new AuthResponseDto
         {
             UserId = user.Id,
             FullName = user.FullName,
             Email = user.Email,
             Role = user.Role,
+            Token = token,
             Message = "Login successful."
         };
     }
