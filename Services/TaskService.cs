@@ -1,25 +1,22 @@
-using AITaskTracker.API.Data;
 using AITaskTracker.API.DTOs;
 using AITaskTracker.API.Entities;
-using Microsoft.EntityFrameworkCore;
+using AITaskTracker.API.Repositories;
 using Microsoft.Identity.Client;
 
 namespace AITaskTracker.API.Services;
 
 public class TaskService : ITaskService
 {
-    private readonly AppDbContext _context;
+    private readonly ITaskRepository _taskRepository;
 
-    public TaskService(AppDbContext context)
+    public TaskService(ITaskRepository taskRepository)
     {
-        _context = context;
+        _taskRepository = taskRepository;
     }
 
     public async Task<List<TaskResponseDto>> GetAllAsync()
     {
-        var tasks = await _context.TaskItems
-            .OrderByDescending(x => x.CreatedAt)
-            .ToListAsync();
+        var tasks = await _taskRepository.GetAllAsync();
 
         return tasks.Select(task => new TaskResponseDto
         {
@@ -33,7 +30,7 @@ public class TaskService : ITaskService
 
     public async Task<TaskResponseDto?> GetByIdAsync(int id)
     {
-        var task = await _context.TaskItems.FindAsync(id);
+        var task = await _taskRepository.GetByIdAsync(id);
 
         if (task is null)
         {
@@ -60,57 +57,56 @@ public class TaskService : ITaskService
             CreatedAt = DateTime.UtcNow
         };
 
-        await _context.TaskItems.AddAsync(task);
-        await _context.SaveChangesAsync();
+        await _taskRepository.AddAsync(task);
+        await _taskRepository.SaveChangesAsync();
 
         return new TaskResponseDto
         {
-          Id = task.Id,
-          Title = task.Title,
-          Description = task.Description,
-          IsCompleted = task.IsCompleted,
-          CreatedAt = task.CreatedAt
+            Id = task.Id,
+            Title = task.Title,
+            Description = task.Description,
+            IsCompleted = task.IsCompleted,
+            CreatedAt = task.CreatedAt
         };
-
     }
 
     public async Task<TaskResponseDto?> UpdateAsync(int id, UpdateTaskDto dto)
     {
-      var task = await _context.TaskItems.FindAsync(id);
+        var task = await _taskRepository.GetByIdAsync(id);
 
-      if (task is null)
-      {
-        return null;
-      }
+        if (task is null)
+        {
+            return null;
+        }
 
-      task.Title = dto.Title;
-      task.Description = dto.Description;
-      task.IsCompleted = dto.IsCompleted;
+        task.Title = dto.Title;
+        task.Description = dto.Description;
+        task.IsCompleted = dto.IsCompleted;
 
-      await _context.SaveChangesAsync();
+        await _taskRepository.SaveChangesAsync();
 
-      return new TaskResponseDto
-      {
-        Id = task.Id,
-        Title = task.Title,
-        Description = task.Description,
-        IsCompleted = task.IsCompleted,
-        CreatedAt = task.CreatedAt
-      };
+        return new TaskResponseDto
+        {
+            Id = task.Id,
+            Title = task.Title,
+            Description = task.Description,
+            IsCompleted = task.IsCompleted,
+            CreatedAt = task.CreatedAt
+        };
     }
 
     public async Task<bool> DeleteAsync(int id)
     {
-      var task = await _context.TaskItems.FindAsync(id);
+        var task = await _taskRepository.GetByIdAsync(id);
 
-      if (task is null)
-      {
-        return false;
-      }
-      _context.TaskItems.Remove(task);
-      await _context.SaveChangesAsync();
+        if (task is null)
+        {
+            return false;
+        }
 
-      return true;
+        _taskRepository.Delete(task);
+        await _taskRepository.SaveChangesAsync();
 
+        return true;
     }
 }
