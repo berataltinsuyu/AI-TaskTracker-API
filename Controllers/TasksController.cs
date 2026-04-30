@@ -1,5 +1,6 @@
 using AITaskTracker.API.DTOs;
 using AITaskTracker.API.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AITaskTracker.API.Controllers;
@@ -20,7 +21,8 @@ public class TasksController : ControllerBase
     {
         var tasks = await _taskService.GetAllAsync();
 
-        return Ok(tasks);
+        return Ok(ApiResponse<List<TaskResponseDto>>.SuccessResponse(tasks,
+            "Tasks listed successfully."));
     }
 
     [HttpGet("{id}")]
@@ -30,31 +32,47 @@ public class TasksController : ControllerBase
 
         if (task is null)
         {
-            return NotFound("Task not found.");
+            return NotFound(ApiResponse<TaskResponseDto>.ErrorResponse("Task not found."));
         }
 
-        return Ok(task);
+        return Ok(ApiResponse<TaskResponseDto>.SuccessResponse(
+            task, "Task retrieved successfully."));
     }
 
     [HttpPost]
     public async Task<IActionResult> Create(CreateTaskDto dto)
     {
+        if (string.IsNullOrWhiteSpace(dto.Title))
+        {
+            return BadRequest(ApiResponse<TaskResponseDto>.ErrorResponse("Title is required."));
+        }
         var createdTask = await _taskService.CreateAsync(dto);
 
-        return CreatedAtAction(nameof(GetById), new { id = createdTask.Id }, createdTask);
+        return CreatedAtAction(
+            nameof(GetById), 
+            new { id = createdTask.Id },
+            ApiResponse<TaskResponseDto>.SuccessResponse(createdTask, "Task created succesfully."));
     }
 
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, UpdateTaskDto dto)
     {
+        if (string.IsNullOrWhiteSpace(dto.Title))
+        {
+            return BadRequest(ApiResponse<TaskResponseDto>.ErrorResponse("Title is required."));
+        }
+        
         var updatedTask = await _taskService.UpdateAsync(id, dto);
 
         if (updatedTask is null)
         {
-            return NotFound("Task not found.");
+            return NotFound(ApiResponse<TaskResponseDto>.ErrorResponse("Task not found."));
         }
 
-        return Ok(updatedTask);
+        return Ok(ApiResponse<TaskResponseDto>.SuccessResponse(
+            updatedTask,
+            "Task updated successfully."
+        ));
     }
 
     [HttpDelete("{id}")]
@@ -64,9 +82,9 @@ public class TasksController : ControllerBase
 
         if (!deleted)
         {
-            return NotFound("Task not found.");
+            return NotFound(ApiResponse<object>.ErrorResponse("Task not found."));
         }
 
-        return NoContent();
+        return Ok(ApiResponse<object>.SuccessResponse(null!,"Task deleted successfully"));
     }
 }
