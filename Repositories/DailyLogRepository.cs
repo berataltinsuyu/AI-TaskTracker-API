@@ -40,3 +40,4 @@ public class DailyLogRepository : IDailyLogRepository
         await _context.SaveChangesAsync();
     }
 }
+

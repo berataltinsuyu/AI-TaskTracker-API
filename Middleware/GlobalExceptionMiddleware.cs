@@ -31,7 +31,7 @@ public class GlobalExceptionMiddleware
           context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
           context.Response.ContentType = "application/json";
 
-          var response = ApiResponse<object>.ErrorResponse("An unexpected error occurred.");
+          var response = ApiResponse<object>.ErrorResponse(ex.Message);
           
           var json = JsonSerializer.Serialize(response);
 
