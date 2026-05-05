@@ -37,4 +37,22 @@ public class AiController : ControllerBase
       "Text summarized successfully."
     ));
   }
+
+  [HttpPost("generate-quiz")]
+  public async Task<IActionResult> GenerateQuiz(GenerateQuizRequestDto dto)
+  {
+      if (string.IsNullOrWhiteSpace(dto.Topic))
+      {
+          return BadRequest(ApiResponse<GenerateQuizResponseDto>.ErrorResponse("Topic is required."));
+      }
+
+      var quiz = await _aiService.GenerateQuizAsync(dto.Topic);
+
+      return Ok(ApiResponse<GenerateQuizResponseDto>.SuccessResponse(
+          quiz,
+          "Quiz generated successfully."
+      ));
+  }
+
+
 }
