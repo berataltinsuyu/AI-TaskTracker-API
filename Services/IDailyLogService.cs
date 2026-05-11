@@ -4,13 +4,13 @@ namespace AITaskTracker.API.Services;
 
 public interface IDailyLogService
 {
-    Task<List<DailyLogResponseDto>> GetAllAsync();
+    Task<List<DailyLogResponseDto>> GetAllAsync(int userId);
 
-    Task<DailyLogResponseDto?> GetByIdAsync(int id);
+    Task<DailyLogResponseDto?> GetByIdAsync(int id, int userId);
 
     Task<DailyLogResponseDto> CreateAsync(CreateDailyLogDto dto, int userId);
 
-    Task<DailyLogResponseDto?> UpdateAsync(int id, UpdateDailyLogDto dto);
+    Task<DailyLogResponseDto?> UpdateAsync(int id, UpdateDailyLogDto dto, int userId);
 
-    Task<bool> DeleteAsync(int id);
+    Task<bool> DeleteAsync(int id, int userId);
 }

@@ -13,9 +13,9 @@ public class DailyLogService : IDailyLogService
         _dailyLogRepository = dailyLogRepository;
     }
 
-    public async Task<List<DailyLogResponseDto>> GetAllAsync()
+    public async Task<List<DailyLogResponseDto>> GetAllAsync(int userId)
     {
-        var logs = await _dailyLogRepository.GetAllAsync();
+        var logs = await _dailyLogRepository.GetAllByUserIdAsync(userId);
 
         return logs.Select(log => new DailyLogResponseDto
         {
@@ -26,9 +26,9 @@ public class DailyLogService : IDailyLogService
         }).ToList();
     }
 
-    public async Task<DailyLogResponseDto?> GetByIdAsync(int id)
+    public async Task<DailyLogResponseDto?> GetByIdAsync(int id, int userId)
     {
-        var log = await _dailyLogRepository.GetByIdAsync(id);
+        var log = await _dailyLogRepository.GetByIdAndUserIdAsync(id, userId);
 
         if (log is null)
         {
@@ -65,9 +65,9 @@ public class DailyLogService : IDailyLogService
         };
     }
 
-    public async Task<DailyLogResponseDto?> UpdateAsync(int id, UpdateDailyLogDto dto)
+    public async Task<DailyLogResponseDto?> UpdateAsync(int id, UpdateDailyLogDto dto, int userId)
     {
-        var log = await _dailyLogRepository.GetByIdAsync(id);
+        var log = await _dailyLogRepository.GetByIdAndUserIdAsync(id, userId);
 
         if (log is null)
         {
@@ -88,9 +88,9 @@ public class DailyLogService : IDailyLogService
         };
     }
 
-    public async Task<bool> DeleteAsync(int id)
+    public async Task<bool> DeleteAsync(int id, int userId)
     {
-        var log = await _dailyLogRepository.GetByIdAsync(id);
+        var log = await _dailyLogRepository.GetByIdAndUserIdAsync(id, userId);
 
         if (log is null)
         {

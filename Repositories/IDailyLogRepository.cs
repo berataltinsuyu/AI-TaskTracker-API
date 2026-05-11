@@ -4,9 +4,9 @@ namespace AITaskTracker.API.Repositories;
 
 public interface IDailyLogRepository
 {
-    Task<List<DailyLog>> GetAllAsync();
+    Task<List<DailyLog>> GetAllByUserIdAsync(int userId);
 
-    Task<DailyLog?> GetByIdAsync(int id);
+    Task<DailyLog?> GetByIdAndUserIdAsync(int id, int userId);
 
     Task AddAsync(DailyLog dailyLog);
 

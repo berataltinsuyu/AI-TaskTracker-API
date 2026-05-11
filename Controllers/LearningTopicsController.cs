@@ -21,7 +21,14 @@ public class LearningTopicsController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var topics = await _learningTopicService.GetAllAsync();
+        var userId = GetCurrentUserId();
+
+        if (userId is null)
+        {
+            return Unauthorized(ApiResponse<List<LearningTopicResponseDto>>.ErrorResponse("User id claim not found."));
+        }
+
+        var topics = await _learningTopicService.GetAllAsync(userId.Value);
 
         return Ok(ApiResponse<List<LearningTopicResponseDto>>.SuccessResponse(
             topics,
@@ -32,7 +39,14 @@ public class LearningTopicsController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
-        var topic = await _learningTopicService.GetByIdAsync(id);
+        var userId = GetCurrentUserId();
+
+        if (userId is null)
+        {
+            return Unauthorized(ApiResponse<LearningTopicResponseDto>.ErrorResponse("User id claim not found."));
+        }
+
+        var topic = await _learningTopicService.GetByIdAsync(id, userId.Value);
 
         if (topic is null)
         {
@@ -58,16 +72,14 @@ public class LearningTopicsController : ControllerBase
             return BadRequest(ApiResponse<LearningTopicResponseDto>.ErrorResponse("Category is required."));
         }
 
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var userId = GetCurrentUserId();
 
-        if (string.IsNullOrWhiteSpace(userIdClaim))
+        if (userId is null)
         {
             return Unauthorized(ApiResponse<LearningTopicResponseDto>.ErrorResponse("User id claim not found."));
         }
 
-        var userId = int.Parse(userIdClaim);
-
-        var createdTopic = await _learningTopicService.CreateAsync(dto, userId);
+        var createdTopic = await _learningTopicService.CreateAsync(dto, userId.Value);
 
         return CreatedAtAction(
             nameof(GetById),
@@ -92,7 +104,14 @@ public class LearningTopicsController : ControllerBase
             return BadRequest(ApiResponse<LearningTopicResponseDto>.ErrorResponse("Category is required."));
         }
 
-        var updatedTopic = await _learningTopicService.UpdateAsync(id, dto);
+        var userId = GetCurrentUserId();
+
+        if (userId is null)
+        {
+            return Unauthorized(ApiResponse<LearningTopicResponseDto>.ErrorResponse("User id claim not found."));
+        }
+
+        var updatedTopic = await _learningTopicService.UpdateAsync(id, dto, userId.Value);
 
         if (updatedTopic is null)
         {
@@ -108,7 +127,14 @@ public class LearningTopicsController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var deleted = await _learningTopicService.DeleteAsync(id);
+        var userId = GetCurrentUserId();
+
+        if (userId is null)
+        {
+            return Unauthorized(ApiResponse<object>.ErrorResponse("User id claim not found."));
+        }
+
+        var deleted = await _learningTopicService.DeleteAsync(id, userId.Value);
 
         if (!deleted)
         {
@@ -116,5 +142,17 @@ public class LearningTopicsController : ControllerBase
         }
 
         return Ok(ApiResponse<object>.SuccessResponse(null!, "Learning topic deleted successfully."));
+    }
+
+    private int? GetCurrentUserId()
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (string.IsNullOrWhiteSpace(userIdClaim))
+        {
+            return null;
+        }
+
+        return int.Parse(userIdClaim);
     }
 }

@@ -13,9 +13,9 @@ public class LearningTopicService : ILearningTopicService
         _learningTopicRepository = learningTopicRepository;
     }
 
-    public async Task<List<LearningTopicResponseDto>> GetAllAsync()
+    public async Task<List<LearningTopicResponseDto>> GetAllAsync(int userId)
     {
-        var topics = await _learningTopicRepository.GetAllAsync();
+        var topics = await _learningTopicRepository.GetAllByUserIdAsync(userId);
 
         return topics.Select(topic => new LearningTopicResponseDto
         {
@@ -27,9 +27,9 @@ public class LearningTopicService : ILearningTopicService
         }).ToList();
     }
 
-    public async Task<LearningTopicResponseDto?> GetByIdAsync(int id)
+    public async Task<LearningTopicResponseDto?> GetByIdAsync(int id, int userId)
     {
-        var topic = await _learningTopicRepository.GetByIdAsync(id);
+        var topic = await _learningTopicRepository.GetByIdAndUserIdAsync(id, userId);
 
         if (topic is null)
         {
@@ -69,9 +69,9 @@ public class LearningTopicService : ILearningTopicService
         };
     }
 
-    public async Task<LearningTopicResponseDto?> UpdateAsync(int id, UpdateLearningTopicDto dto)
+    public async Task<LearningTopicResponseDto?> UpdateAsync(int id, UpdateLearningTopicDto dto, int userId)
     {
-        var topic = await _learningTopicRepository.GetByIdAsync(id);
+        var topic = await _learningTopicRepository.GetByIdAndUserIdAsync(id, userId);
 
         if (topic is null)
         {
@@ -94,9 +94,9 @@ public class LearningTopicService : ILearningTopicService
         };
     }
 
-    public async Task<bool> DeleteAsync(int id)
+    public async Task<bool> DeleteAsync(int id, int userId)
     {
-        var topic = await _learningTopicRepository.GetByIdAsync(id);
+        var topic = await _learningTopicRepository.GetByIdAndUserIdAsync(id, userId);
 
         if (topic is null)
         {

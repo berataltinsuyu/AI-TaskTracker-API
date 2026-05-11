@@ -13,16 +13,18 @@ public class DailyLogRepository : IDailyLogRepository
         _context = context;
     }
 
-    public async Task<List<DailyLog>> GetAllAsync()
+    public async Task<List<DailyLog>> GetAllByUserIdAsync(int userId)
     {
         return await _context.DailyLogs
+            .Where(x => x.UserId == userId)
             .OrderByDescending(x => x.LogDate)
             .ToListAsync();
     }
 
-    public async Task<DailyLog?> GetByIdAsync(int id)
+    public async Task<DailyLog?> GetByIdAndUserIdAsync(int id, int userId)
     {
-        return await _context.DailyLogs.FindAsync(id);
+        return await _context.DailyLogs
+            .FirstOrDefaultAsync(x => x.Id == id && x.UserId == userId);
     }
 
     public async Task AddAsync(DailyLog dailyLog)
@@ -40,4 +42,3 @@ public class DailyLogRepository : IDailyLogRepository
         await _context.SaveChangesAsync();
     }
 }
-

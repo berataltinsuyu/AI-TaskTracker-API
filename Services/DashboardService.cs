@@ -19,11 +19,11 @@ public class DashboardService : IDashboardService
     _learningTopicRepository = learningTopicRepository;
   }
 
-  public async Task<DashboardSummaryDto> GetSummaryAsync()
+  public async Task<DashboardSummaryDto> GetSummaryAsync(int userId)
   {
-    var tasks = await _taskRepository.GetAllAsync();
-    var dailyLogs = await _dailyLogRepository.GetAllAsync();
-    var learningTopics = await _learningTopicRepository.GetAllAsync();
+    var tasks = await _taskRepository.GetAllByUserIdAsync(userId);
+    var dailyLogs = await _dailyLogRepository.GetAllByUserIdAsync(userId);
+    var learningTopics = await _learningTopicRepository.GetAllByUserIdAsync(userId);
 
     var completedTasks = tasks.Count(task => task.IsCompleted);
     var totalTasks = tasks.Count;

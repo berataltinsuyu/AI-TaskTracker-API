@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using AITaskTracker.API.DTOs;
 using AITaskTracker.API.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -7,6 +8,7 @@ namespace AITaskTracker.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class TasksController : ControllerBase
 {
     private readonly ITaskService _taskService;
@@ -19,16 +21,32 @@ public class TasksController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var tasks = await _taskService.GetAllAsync();
+        var userId = GetCurrentUserId();
 
-        return Ok(ApiResponse<List<TaskResponseDto>>.SuccessResponse(tasks,
-            "Tasks listed successfully."));
+        if (userId is null)
+        {
+            return Unauthorized(ApiResponse<List<TaskResponseDto>>.ErrorResponse("User id claim not found."));
+        }
+
+        var tasks = await _taskService.GetAllAsync(userId.Value);
+
+        return Ok(ApiResponse<List<TaskResponseDto>>.SuccessResponse(
+            tasks,
+            "Tasks listed successfully."
+        ));
     }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
-        var task = await _taskService.GetByIdAsync(id);
+        var userId = GetCurrentUserId();
+
+        if (userId is null)
+        {
+            return Unauthorized(ApiResponse<TaskResponseDto>.ErrorResponse("User id claim not found."));
+        }
+
+        var task = await _taskService.GetByIdAsync(id, userId.Value);
 
         if (task is null)
         {
@@ -36,7 +54,9 @@ public class TasksController : ControllerBase
         }
 
         return Ok(ApiResponse<TaskResponseDto>.SuccessResponse(
-            task, "Task retrieved successfully."));
+            task,
+            "Task retrieved successfully."
+        ));
     }
 
     [HttpPost]
@@ -46,12 +66,21 @@ public class TasksController : ControllerBase
         {
             return BadRequest(ApiResponse<TaskResponseDto>.ErrorResponse("Title is required."));
         }
-        var createdTask = await _taskService.CreateAsync(dto);
+
+        var userId = GetCurrentUserId();
+
+        if (userId is null)
+        {
+            return Unauthorized(ApiResponse<TaskResponseDto>.ErrorResponse("User id claim not found."));
+        }
+
+        var createdTask = await _taskService.CreateAsync(dto, userId.Value);
 
         return CreatedAtAction(
-            nameof(GetById), 
+            nameof(GetById),
             new { id = createdTask.Id },
-            ApiResponse<TaskResponseDto>.SuccessResponse(createdTask, "Task created succesfully."));
+            ApiResponse<TaskResponseDto>.SuccessResponse(createdTask, "Task created successfully.")
+        );
     }
 
     [HttpPut("{id}")]
@@ -61,8 +90,15 @@ public class TasksController : ControllerBase
         {
             return BadRequest(ApiResponse<TaskResponseDto>.ErrorResponse("Title is required."));
         }
-        
-        var updatedTask = await _taskService.UpdateAsync(id, dto);
+
+        var userId = GetCurrentUserId();
+
+        if (userId is null)
+        {
+            return Unauthorized(ApiResponse<TaskResponseDto>.ErrorResponse("User id claim not found."));
+        }
+
+        var updatedTask = await _taskService.UpdateAsync(id, userId.Value, dto);
 
         if (updatedTask is null)
         {
@@ -78,13 +114,32 @@ public class TasksController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var deleted = await _taskService.DeleteAsync(id);
+        var userId = GetCurrentUserId();
+
+        if (userId is null)
+        {
+            return Unauthorized(ApiResponse<object>.ErrorResponse("User id claim not found."));
+        }
+
+        var deleted = await _taskService.DeleteAsync(id, userId.Value);
 
         if (!deleted)
         {
             return NotFound(ApiResponse<object>.ErrorResponse("Task not found."));
         }
 
-        return Ok(ApiResponse<object>.SuccessResponse(null!,"Task deleted successfully"));
+        return Ok(ApiResponse<object>.SuccessResponse(null!, "Task deleted successfully."));
+    }
+
+    private int? GetCurrentUserId()
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (string.IsNullOrWhiteSpace(userIdClaim))
+        {
+            return null;
+        }
+
+        return int.Parse(userIdClaim);
     }
 }

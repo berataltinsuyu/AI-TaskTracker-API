@@ -1,7 +1,6 @@
 using AITaskTracker.API.DTOs;
 using AITaskTracker.API.Entities;
 using AITaskTracker.API.Repositories;
-using Microsoft.Identity.Client;
 
 namespace AITaskTracker.API.Services;
 
@@ -14,9 +13,9 @@ public class TaskService : ITaskService
         _taskRepository = taskRepository;
     }
 
-    public async Task<List<TaskResponseDto>> GetAllAsync()
+    public async Task<List<TaskResponseDto>> GetAllAsync(int userId)
     {
-        var tasks = await _taskRepository.GetAllAsync();
+        var tasks = await _taskRepository.GetAllByUserIdAsync(userId);
 
         return tasks.Select(task => new TaskResponseDto
         {
@@ -24,13 +23,14 @@ public class TaskService : ITaskService
             Title = task.Title,
             Description = task.Description,
             IsCompleted = task.IsCompleted,
-            CreatedAt = task.CreatedAt
+            CreatedAt = task.CreatedAt,
+            UserId = task.UserId
         }).ToList();
     }
 
-    public async Task<TaskResponseDto?> GetByIdAsync(int id)
+    public async Task<TaskResponseDto?> GetByIdAsync(int id, int userId)
     {
-        var task = await _taskRepository.GetByIdAsync(id);
+        var task = await _taskRepository.GetByIdAndUserIdAsync(id, userId);
 
         if (task is null)
         {
@@ -43,18 +43,20 @@ public class TaskService : ITaskService
             Title = task.Title,
             Description = task.Description,
             IsCompleted = task.IsCompleted,
-            CreatedAt = task.CreatedAt
+            CreatedAt = task.CreatedAt,
+            UserId = task.UserId
         };
     }
 
-    public async Task<TaskResponseDto> CreateAsync(CreateTaskDto dto)
+    public async Task<TaskResponseDto> CreateAsync(CreateTaskDto dto, int userId)
     {
         var task = new TaskItem
         {
             Title = dto.Title,
             Description = dto.Description,
             IsCompleted = false,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            UserId = userId
         };
 
         await _taskRepository.AddAsync(task);
@@ -66,13 +68,14 @@ public class TaskService : ITaskService
             Title = task.Title,
             Description = task.Description,
             IsCompleted = task.IsCompleted,
-            CreatedAt = task.CreatedAt
+            CreatedAt = task.CreatedAt,
+            UserId = task.UserId
         };
     }
 
-    public async Task<TaskResponseDto?> UpdateAsync(int id, UpdateTaskDto dto)
+    public async Task<TaskResponseDto?> UpdateAsync(int id, int userId, UpdateTaskDto dto)
     {
-        var task = await _taskRepository.GetByIdAsync(id);
+        var task = await _taskRepository.GetByIdAndUserIdAsync(id, userId);
 
         if (task is null)
         {
@@ -91,13 +94,14 @@ public class TaskService : ITaskService
             Title = task.Title,
             Description = task.Description,
             IsCompleted = task.IsCompleted,
-            CreatedAt = task.CreatedAt
+            CreatedAt = task.CreatedAt,
+            UserId = task.UserId
         };
     }
 
-    public async Task<bool> DeleteAsync(int id)
+    public async Task<bool> DeleteAsync(int id, int userId)
     {
-        var task = await _taskRepository.GetByIdAsync(id);
+        var task = await _taskRepository.GetByIdAndUserIdAsync(id, userId);
 
         if (task is null)
         {
