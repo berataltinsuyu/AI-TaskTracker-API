@@ -21,6 +21,11 @@ builder.Services.AddScoped<ITaskRepository, TaskRepository>();
 builder.Services.AddScoped<IDailyLogRepository, DailyLogRepository>();
 builder.Services.AddScoped<IDailyLogService, DailyLogService>();
 
+builder.Services.AddScoped<ILearningTopicRepository, LearningTopicRepository>();
+builder.Services.AddScoped<ILearningTopicService, LearningTopicService>();
+
+builder.Services.AddScoped<IDashboardService, DashboardService>();
+
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
