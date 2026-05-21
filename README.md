@@ -347,10 +347,10 @@ Example:
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=localhost,1433;Database=AITaskTrackerDb;User Id=sa;Password=YourPassword;TrustServerCertificate=True;"
+    "DefaultConnection": "Server=localhost,1433;Database=AITaskTrackerDb;TrustServerCertificate=True;"
   },
   "JwtSettings": {
-    "SecretKey": "your-development-secret-key",
+    "SecretKey": "",
     "Issuer": "AITaskTrackerAPI",
     "Audience": "AITaskTrackerClient",
     "ExpirationMinutes": 60
@@ -362,13 +362,15 @@ Example:
 }
 ```
 
-For security reasons, API keys should not be committed to GitHub.
+For security reasons, sensitive values like Database Credentials, JWT Secret Keys, and API keys should not be committed to GitHub.
 
-Use environment variables for sensitive values.
+Use environment variables or .NET User Secrets for sensitive values.
 
-Example:
+Example using environment variables:
 
 ```bash
+export ConnectionStrings__DefaultConnection="Server=localhost,1433;Database=AITaskTrackerDb;User Id=sa;Password=YourSecurePassword;TrustServerCertificate=True;"
+export JwtSettings__SecretKey="your-secure-secret-key-minimum-32-characters"
 export GeminiSettings__ApiKey="your-api-key"
 ```
 
