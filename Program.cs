@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using AITaskTracker.API.Middleware;
+using AITaskTracker.API.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,22 +16,7 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddScoped<ITaskService, TaskService>();
-builder.Services.AddScoped<ITaskRepository, TaskRepository>();
-
-builder.Services.AddScoped<IDailyLogRepository, DailyLogRepository>();
-builder.Services.AddScoped<IDailyLogService, DailyLogService>();
-
-builder.Services.AddScoped<ILearningTopicRepository, LearningTopicRepository>();
-builder.Services.AddScoped<ILearningTopicService, LearningTopicService>();
-
-builder.Services.AddScoped<IDashboardService, DashboardService>();
-
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<ITokenService, TokenService>();
-
-builder.Services.AddHttpClient<IAiService, AiService>();
+builder.Services.AddApplicationServices();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
