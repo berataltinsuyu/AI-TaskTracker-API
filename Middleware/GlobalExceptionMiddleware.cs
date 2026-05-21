@@ -9,13 +9,16 @@ public class GlobalExceptionMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<GlobalExceptionMiddleware> _logger;
+    private readonly IWebHostEnvironment _env;
 
     public GlobalExceptionMiddleware(
         RequestDelegate next,
-        ILogger<GlobalExceptionMiddleware> logger)
+        ILogger<GlobalExceptionMiddleware> logger,
+        IWebHostEnvironment env)
         {
           _next = next;
           _logger = logger;
+          _env = env;
         }
 
     public async Task InvokeAsync (HttpContext context)
@@ -31,7 +34,8 @@ public class GlobalExceptionMiddleware
           context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
           context.Response.ContentType = "application/json";
 
-          var response = ApiResponse<object>.ErrorResponse(ex.Message);
+          var message = _env.IsDevelopment() ? ex.Message : "An internal server error occurred.";
+          var response = ApiResponse<object>.ErrorResponse(message);
           
           var json = JsonSerializer.Serialize(response);
 
